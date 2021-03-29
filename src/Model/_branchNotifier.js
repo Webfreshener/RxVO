@@ -93,13 +93,13 @@ class Notifier {
      * @param forPath
      */
     sendNext(forPath) {
-        if (forPath[0] !== ".") {
-            forPath = `.${forPath}`;
-        }
-
-        this.$owner.getModelsInPath(forPath).forEach(
-            (m) => _oBuilders.get(this.$owner).next(m.$model)
-        );
+        setTimeout(() => {
+            this.$owner.getModelsInPath(forPath).forEach(
+                (m) => {
+                    _oBuilders.get(this.$owner).next(m.$model)
+                }
+            );
+        }, 0);
     }
 
     /**
@@ -135,13 +135,13 @@ export default class Notifiers {
      */
     static create(owner) {
         new Notifier(owner);
-        return Notifiers.get(owner);
+        return notifiers.get(owner);
     }
 
     /**
      *
      * @param owner
-     * @returns {Notifier}
+     * @returns {*}
      */
     static get(owner) {
         return notifiers.get(owner);

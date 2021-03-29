@@ -37,7 +37,7 @@ const _documents = new WeakMap();
 /**
  * returns Items or Properties model class based on type of expected property
  * @param el
- * @returns {ItemsModel|PropertiesModel}
+ * @returns {ItemsModel|PropertiesModel|Function}
  * @private
  */
 const _getModelClass = (el) => {
@@ -80,16 +80,10 @@ export class Model {
         _schemaSignatures.set(this, schemas);
         _oBuilders.set(this, new ObserverBuilder());
 
-        let _doc;
+        const _schema = schemas.hasOwnProperty("schemas") ?
+            schemas.schemas[schemas.schemas.length - 1] : schemas;
 
-        if (schemas.hasOwnProperty("schemas")) {
-            // if value of type is "array" or an array of items is defined,
-            // we handle as Array
-            _doc = new (_getModelClass(schemas.schemas[schemas.schemas.length - 1]))
-            (this, schemas.schemas[schemas.schemas.length - 1].$id);
-        } else {
-            _doc = new (_getModelClass(schemas))(this, schemas.$id);
-        }
+        const _doc = new (_getModelClass(_schema))(this, _schema.$id || "root#");
 
         // creates holder for dirty model flags in this scope
         _dirtyModels.set(this, {});
@@ -257,8 +251,7 @@ export class Model {
             .filter((itm, idx, arr) => arr.indexOf(itm) > -1))
             .forEach((step) => {
                 if (_ref[step]) {
-                    _ref = _ref[step];
-                    _steps.push(_ref);
+                    _steps[_steps.length] = _ref = _ref[step];
                 }
             });
         return _steps;

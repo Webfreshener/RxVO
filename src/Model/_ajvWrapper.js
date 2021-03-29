@@ -53,7 +53,6 @@ const _preconstruct = (path, data, owner) => {
             _p.splice(0, _p.length-1);
             throw e;
         }
-
     }
 
     return _o;

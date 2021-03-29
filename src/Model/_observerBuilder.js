@@ -35,16 +35,17 @@ export class ObserverBuilder {
      */
     constructor() {
         _observers.set(this, new WeakMap());
-        _observerPaths.set(this, []);
+        _observerCache.set(this, new WeakMap());
+        _observerPaths.set(this, {});
     }
 
     /**
      * Retrieves BehaviorSubject Collection for given Model
-     * @param target {BaseModel}
-     * @returns {BaseModel|null} Observer at path reference
+     * @param model {BaseModel}
+     * @returns {Object|null} Observer at path reference
      */
-    get(target) {
-        return _observers.get(this).get(target) || null;
+    getObserverForModel(model) {
+        return _observers.get(this).get(model) || null;
     }
 
     /**
@@ -53,8 +54,8 @@ export class ObserverBuilder {
      * @returns {*}
      */
     getObserverForPath(path) {
-        const _itm = _observerPaths.get(this).find((o) => o[0] === `${path}`);
-        return _itm && _itm.length > 1 ? this.get(_itm[1]) : null;
+        const _oP = _observerPaths.get(this);
+        return _oP.hasOwnProperty(path) ? _oP[path] : null;
     }
 
     /**
@@ -62,7 +63,7 @@ export class ObserverBuilder {
      * @returns {[string]}
      */
     list() {
-        return _observerPaths.get(this).map((o) => o[0]);
+        return Object.keys(_observerPaths.get(this));
     }
 
     /**
@@ -70,15 +71,40 @@ export class ObserverBuilder {
      * @param target {BaseModel}
      */
     create(target) {
+        if (!target.path) {
+            console.log(`invalid target: ${target} cname: ${target.constructor.name} target.path: ${target.path}`);
+            throw ("target object is invalid");
+        }
+
+        const _oP = _observerPaths.get(this);
+
+        if (_oP.hasOwnProperty(target.path)) {
+            return _oP[target.path];
+        }
+
         const _o = _observers.get(this);
+        const _existing = this.getObserverForPath(target.path);
+        if (_existing) {
+            return _o.get(target);
+        }
+
         const _h = {
             onNext: new BehaviorSubject(null).skip(1),
             onError: new BehaviorSubject(null).skip(1),
             onComplete: new BehaviorSubject(null).skip(1),
+            path: target.path,
+            jsonPath: target.jsonPath,
+            targetId: target.objectID,
         };
+
         _o.set(target, _h);
-        _observerPaths.get(this).splice(0, 0, [`${target.path}`, target]);
-        return _o.get(target);
+
+        _observerPaths.set(this, Object.defineProperty(
+            _observerPaths.get(this), `${target.path}`, {
+                value: _h
+            })
+        );
+        return _h;
     }
 
     /**
@@ -86,10 +112,8 @@ export class ObserverBuilder {
      * @param target
      */
     mute(target) {
-        const _idx = _observerPaths.get(this).findIndex(
-            (el) => el[0] === `${target.path}` && el[1] === target
-        );
-        _observerCache.set(target, {idx: _idx, value: _observerPaths.get(this).splice(_idx, 1)});
+        const _idx = this.list().indexOf(target.path);
+        _observerCache.get(this).set(target, {idx: _idx, value: target.path});
     }
 
     /**
@@ -97,12 +121,7 @@ export class ObserverBuilder {
      * @param target
      */
     unmute(target) {
-        const _cached = _observerCache.get(target);
-
-        if (_cached) {
-            _observerPaths.get(this).splice(_cached.idx, 0, _cached.value);
-            _observerCache.delete(target);
-        }
+        _observerCache.get(this).delete(target);
     }
 
     /**
@@ -110,13 +129,12 @@ export class ObserverBuilder {
      * @param target {BaseModel}
      */
     next(target) {
-        if (!target || target.isDirty) {
+        if (!target || target.isDirty || _observerCache.get(target)) {
             return;
         }
 
-        let _o = !_observerCache.get(target) ? this.get(target) : null;
-
-        if (_o !== null) {
+        const _o = this.getObserverForPath(target.path) || null;
+        if (_o) {
             _o.onNext.next(target);
         }
     }
@@ -126,7 +144,7 @@ export class ObserverBuilder {
      * @param target {BaseModel}
      */
     complete(target) {
-        let _o = this.get(target);
+        let _o = this.getObserverForModel(target);
         if (_o !== null) {
             _o.onComplete.next();
         }
@@ -138,7 +156,7 @@ export class ObserverBuilder {
      * @param message {*}
      */
     error(target, message) {
-        let _o = this.get(target);
+        let _o = this.getObserverForModel(target);
         if (_o !== null) {
             _o.onError.next(message);
         }

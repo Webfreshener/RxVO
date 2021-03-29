@@ -23,20 +23,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ############################################################################ */
-import {wf, _mdRef} from "./_references";
+import {_mdRef} from "./_references";
+import {PropertiesModel} from "./propertiesModel";
+import {ItemsModel} from "./itemsModel";
 const _mData = new WeakMap();
+
 /**
  * @private
  */
 export class MetaData {
     /**
      * @constructor
-     * @param {PropertiesModel|Set} _oRef -- Object Reference to item being described
+     * @param {PropertiesModel|ItemsModel} _oRef -- Object Reference to item being described
      * @param {object} _data -- Initial Data {parent:PropertiesModel|ItemsModel}
      */
     constructor(_oRef, _data = {}) {
-        let _cName = wf.Fun.getConstructorName(_oRef);
-
+        let _cName = _oRef.constructor.name;
         if (this._createID == null) {
             let _id = 0;
             MetaData.prototype._createID = function () {
@@ -63,7 +65,7 @@ export class MetaData {
      */
     get(key) {
         let __ = _mData.get(this);
-        return __.hasOwnProperty(key) ? __[key] : null;
+        return __ && __.hasOwnProperty(key) ? __[key] : null;
     }
 
     /**
@@ -94,7 +96,7 @@ export class MetaData {
      * @returns {string}
      */
     get path() {
-        return this.get("_path");
+        return `${this.get("_path")}`;
     }
 
     /**

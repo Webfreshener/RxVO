@@ -1199,6 +1199,7 @@ export default {
             additionalProperties: true
         },
         any: {
+            type: "object",
             additionalProperties: true
         },
         expression: {

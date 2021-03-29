@@ -39,7 +39,6 @@ describe("Basic Refs", () => {
         });
 
         it("should load and validate OpenAPIv3 Schema", () => {
-            console.log("should load and validate OpenAPIv3 Schema");
             const _d = {
                 openapi: "3.0.1",
                 info: {

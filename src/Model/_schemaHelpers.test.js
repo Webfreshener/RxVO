@@ -3,20 +3,23 @@ import {PropertiesModel} from "./propertiesModel";
 import {Model} from "./index";
 import {SchemaHelpers} from "./_schemaHelpers";
 import {basicModel} from "../../fixtures/PropertiesModel.schemas";
+const _owner = new Model({schemas: [{
+        $id: "test#",
+        type: "object",
+    }]});
 
 describe("SchemaHelpers Class Tests", () => {
-    let _owner, _schema, _sH;
+    let _schema, _sH;
 
-    beforeEach(() => {
-        _owner = new Model(basicModel);
-        _schema = new PropertiesModel(_owner);
-        _sH = new SchemaHelpers(_schema);
-    });
+    // beforeEach(() => {
+    //     _owner = new Model(basicModel);
+    //     _schema = new PropertiesModel(_owner);
+    //     _sH = new SchemaHelpers(_schema);
+    // });
 
     describe("Child Object Methods", () => {
         beforeEach(() => {
-            _owner = new Model({schemas: [basicModel]});
-            _schema = new PropertiesModel(_owner);
+            _schema = new PropertiesModel(_owner, "childElement");
             _sH = new SchemaHelpers(_schema);
         });
 

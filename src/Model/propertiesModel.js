@@ -42,7 +42,7 @@ export class PropertiesModel extends BaseModel {
      *
      */
     constructor() {
-        super(arguments[0]);
+        super(...arguments);
 
         // stores SchemaHelpers reference for use
         _schemaHelpers.set(this, new SchemaHelpers(this));
@@ -100,6 +100,7 @@ export class PropertiesModel extends BaseModel {
         // defines new Proxy Object for data modeling
         _object.set(this,
             new Proxy(BaseModel.createRef(this, {}), this.handler));
+
         Object.keys(value).forEach((k) => {
             // -- added try/catch to avoid error in JSFiddle
             try {
@@ -113,11 +114,13 @@ export class PropertiesModel extends BaseModel {
             }
         });
 
-        // marks model as in sync with tree
-        makeClean(this);
+        // setTimeout(() => {
+            // marks model as in sync with tree
+            makeClean(this);
+        // }, 0);
 
-        // // calls next's observable to update subscribers
-        if (!this.isDirty) {
+        // calls next's observable to update subscribers
+        if ((this.parent && !this.parent.isDirty) || !this.isDirty) {
             Notifiers.get(this.owner).sendNext(this.jsonPath);
         }
 

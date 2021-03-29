@@ -23,16 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ############################################################################ */
-/**
- * @private Weakmap Refs
- */
-import {exists, Fun, Obj, Str} from "ofs-utils";
-export const _exists = exists;
-export const wf = {
-    Fun:Fun,
-    Obj: Obj,
-    Str: Str
-};
 
 /**
  * Holder for PropertiesModel and ItemsModel instance references
